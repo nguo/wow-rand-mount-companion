@@ -10,7 +10,12 @@ local companions = {}
 
 local randomMount, randomCompanion
 
-local specialCompanions = { "Scorched Stone" } --"Clockwork Rocket Bot", 
+-- certain companions, especially ones from quests / events/ dungeons, are categorized as "Junk" and need special whitelisting
+local specialCompanions = { "Scorched Stone", "Magical Crawdad Box", "Miniwing", "Smolderweb Carrier",
+  "Chicken Egg", "Mechanical Chicken", "Worg Carrier", "Parrot Cage (Green Wing Macaw)", "Cat Carrier (Siamese)",
+  "Wood Frog Box", "Tree Frog Box", "Truesilver Shafted Arrow",
+  "Piglet's Collar", "Rat Cage", "Turtle Box", "Sleepy Willy", "Elekk Training Collar", "Egbert's Egg",
+  "Captured Flame", "Wolpertinger's Tankard", "Pint-Sized Pink Pachyderm", "Sinister Squashling", "Phoenix Hatchling", "Mojo" }
 local deviceMounts = { "Turbo-Charged Flying Machine Control", "Flying Machine Control" }
 
 local function contains(items, value)
