@@ -1,0 +1,7 @@
+## Interface: 20503
+## Title: RandomMountAndCompanion
+## Author: xgooy
+## Version: 0.0.1
+## Notes: Summons random mount and companion
+
+main.lua
