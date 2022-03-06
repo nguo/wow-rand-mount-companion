@@ -4,7 +4,7 @@ WoW Classic TBC addon to summon a random mount and companion in your bags. It as
 
 ### Macros
 
-To hook everything up in one macro:
+#### To hook everything up in one macro:
 
 ```
 /run rmcSetRandom(false)
@@ -16,14 +16,14 @@ If you're not mounted yet, the macro will summon a random companion and mount. T
 
 You can also use different macros for mount and companion.
 
-For mount:
+#### For mount:
 ```
 /run rmcSetRandom(false)
 /click [nomounted] rmcMountButton
 /dismount [mounted]
 ```
 
-For companion:
+#### For companion:
 ```
 /run rmcSetRandom(false)
 /click rmcCompanionButton
