@@ -17,6 +17,7 @@ local specialCompanions = { "Scorched Stone", "Magical Crawdad Box", "Miniwing",
   "Piglet's Collar", "Rat Cage", "Turtle Box", "Sleepy Willy", "Elekk Training Collar", "Egbert's Egg",
   "Captured Flame", "Wolpertinger's Tankard", "Pint-Sized Pink Pachyderm", "Sinister Squashling", "Phoenix Hatchling", "Mojo" }
 local deviceMounts = { "Turbo-Charged Flying Machine Control", "Flying Machine Control" }
+local lvl70GroundMounts = { "Amani War Bear", "Fiery Warhorse's Reins" }
 
 local function contains(items, value)
   for _,v in pairs(items) do
@@ -42,7 +43,7 @@ local function rmcRefreshData()
       if item ~= nil then
         local name, _, quality, _, minLevel, itype, subtype, _, equipLoc = GetItemInfo(item)
         if quality and quality >= 3 and equipLoc == "" and (subtype == "Mount" or (subtype == "Devices" and contains(deviceMounts, name))) and C_Item.IsBound(ItemLocation:CreateFromBagAndSlot(bag, slot)) then
-          if minLevel == 70 then
+          if minLevel == 70 and not contains(lvl70GroundMounts, name) then
               table.insert(newFlyingMounts, name)
           else
               table.insert(newGroundMounts, name)
