@@ -62,6 +62,8 @@ local function rmcRefreshData()
   rmcSetRandom(true)
 end
 
+local function forceGroundMount()
+  return GetSubZoneText() == "Throne of Kil'jaeden" and C_QuestLog.IsOnQuest(11516) and not IsQuestComplete(11516)
 end
 
 local function skipPet()
