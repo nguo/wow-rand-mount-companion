@@ -13,7 +13,7 @@ local randomMount, randomCompanion
 -- certain companions, especially ones from quests / events/ dungeons, are categorized as "Junk" and need special whitelisting
 local specialCompanions = { "Scorched Stone", "Magical Crawdad Box", "Miniwing", "Smolderweb Carrier",
   "Chicken Egg", "Mechanical Chicken", "Worg Carrier", "Parrot Cage (Green Wing Macaw)", "Cat Carrier (Siamese)",
-  "Wood Frog Box", "Tree Frog Box", "Truesilver Shafted Arrow",
+  "Wood Frog Box", "Tree Frog Box", "Truesilver Shafted Arrow", "A Jubling's Tiny Home",
   "Piglet's Collar", "Rat Cage", "Turtle Box", "Sleepy Willy", "Elekk Training Collar", "Egbert's Egg",
   "Captured Flame", "Wolpertinger's Tankard", "Pint-Sized Pink Pachyderm", "Sinister Squashling", "Phoenix Hatchling", "Mojo" }
 local deviceMounts = { "Turbo-Charged Flying Machine Control", "Flying Machine Control" }
@@ -62,12 +62,18 @@ local function rmcRefreshData()
   rmcSetRandom(true)
 end
 
+end
+
+local function skipPet()
+  return GetSubZoneText() == "Throne of Kil'jaeden" and C_QuestLog.IsOnQuest(11516) and not IsQuestComplete(11516)
+end
+
 function rmcSetRandom(force)
   if IsMounted() and not force then
     return
   end
 
-  if IsFlyableArea() and #flyingMounts > 0 then
+  if IsFlyableArea() and not forceGroundMount() and #flyingMounts > 0 then
     mounts = flyingMounts
   else
     mounts = groundMounts
@@ -79,6 +85,10 @@ function rmcSetRandom(force)
   if numMounts > 0 then
     randomMount = mounts[math.random(numMounts)]
     rmcMountButton:SetAttribute("item", randomMount)
+  end
+  if skipPet() then
+    rmcCompanionButton:SetAttribute("item", "")
+    return
   end
   if numCompanions > 0 then
     lastRandomCompanion = randomCompanion
