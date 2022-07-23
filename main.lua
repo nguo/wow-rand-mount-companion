@@ -70,6 +70,11 @@ local function skipPet()
   return GetSubZoneText() == "Throne of Kil'jaeden" and C_QuestLog.IsOnQuest(11516) and not IsQuestComplete(11516)
 end
 
+local function setButton(button, type, value)
+  button:SetAttribute("type", type)
+  button:SetAttribute(type, value)
+end
+
 function rmcSetRandom(force)
   if IsMounted() and not force then
     return
@@ -86,8 +91,19 @@ function rmcSetRandom(force)
 
   if numMounts > 0 then
     randomMount = mounts[math.random(numMounts)]
-    rmcMountButton:SetAttribute("item", randomMount)
+    setButton(rmcMountButton, "item", randomMount)
+  elseif IsFlyableArea() and not forceGroundMount() then
+    -- flight form?
+  elseif IsSpellKnown(23161) then -- dreadsteed
+    setButton(rmcMountButton, "spell", "Summon Dreadsteed")
+  elseif IsSpellKnown(5784) then -- felsteed
+    setButton(rmcMountButton, "spell", "Summon Felsteed")
+  elseif IsSpellKnown(34767) or IsSpellKnown(23214) then -- charger
+    setButton(rmcMountButton, "spell", "Summon Charger")
+  elseif IsSpellKnown(34769) or IsSpellKnown(13819) then -- warhorse
+    setButton(rmcMountButton, "spell", "Summon Warhorse")
   end
+
   if skipPet() then
     rmcCompanionButton:SetAttribute("item", "")
     return
