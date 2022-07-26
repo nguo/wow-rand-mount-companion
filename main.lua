@@ -1,65 +1,75 @@
 local rmcFrame = CreateFrame("Frame", "rmcFrame", UIParent)
-local rmcMountButton = CreateFrame("Button", "rmcMountButton", nil, "SecureActionButtonTemplate")
-local rmcCompanionButton = CreateFrame("Button", "rmcCompanionButton", nil, "SecureActionButtonTemplate")
-rmcMountButton:SetAttribute("type", "item")
-rmcCompanionButton:SetAttribute("type", "item")
 
 local groundMounts = {}
 local flyingMounts = {}
-local companions = {}
+local waterMounts = {}
+local critters = {}
 
-local randomMount, randomCompanion
+local randomMount, randomCritter
 
--- certain companions, especially ones from quests / events/ dungeons, are categorized as "Junk" and need special whitelisting
-local specialCompanions = { "Scorched Stone", "Magical Crawdad Box", "Miniwing", "Smolderweb Carrier",
-  "Chicken Egg", "Mechanical Chicken", "Worg Carrier", "Parrot Cage (Green Wing Macaw)", "Cat Carrier (Siamese)",
-  "Wood Frog Box", "Tree Frog Box", "Truesilver Shafted Arrow", "A Jubling's Tiny Home",
-  "Piglet's Collar", "Rat Cage", "Turtle Box", "Sleepy Willy", "Elekk Training Collar", "Egbert's Egg",
-  "Captured Flame", "Wolpertinger's Tankard", "Pint-Sized Pink Pachyderm", "Sinister Squashling", "Phoenix Hatchling", "Mojo" }
-local deviceMounts = { "Turbo-Charged Flying Machine Control", "Flying Machine Control" }
-local lvl70GroundMounts = { "Amani War Bear", "Fiery Warhorse's Reins" }
+local playerName = UnitName("player")
+local playerConfig = RMCConfig.db[playerName]
+local defaultConfig = RMCConfig.db["default"]
 
-local function contains(items, value)
-  for _,v in pairs(items) do
-    if (v == value) then
-        return true
-    end
-  end
-  return false
+local favGrounds
+local favFlyings
+local favWaters
+local favCritters
+
+if playerConfig and playerConfig.ground and #playerConfig.ground > 0 then
+  favGrounds = playerConfig.ground
+else
+  favGrounds = defaultConfig.ground
+end
+
+if playerConfig and playerConfig.flying and #playerConfig.flying > 0 then
+  favFlyings = playerConfig.flying
+else
+  favFlyings = defaultConfig.flying
+end
+
+if playerConfig and playerConfig.water and #playerConfig.water > 0 then
+  favWaters = playerConfig.water
+else
+  favWaters = defaultConfig.water
+end
+
+if playerConfig and playerConfig.critter and #playerConfig.critter > 0 then
+  favCritters = playerConfig.critter
+else
+  favCritters = defaultConfig.critter
 end
 
 local function rmcRefreshData()
-  local bag
-  local slot
-  local item
-
   local newGroundMounts = {}
   local newFlyingMounts = {}
-  local newCompanions = {}
+  local newWaterMounts = {}
+  local newCritters = {}
 
-  for bag = 0, NUM_BAG_SLOTS do
-    for slot = 1, GetContainerNumSlots(bag) do
-      item = GetContainerItemID(bag, slot)
-      if item ~= nil then
-        local name, _, quality, _, minLevel, itype, subtype, _, equipLoc = GetItemInfo(item)
-        if quality and quality >= 3 and equipLoc == "" and (subtype == "Mount" or (subtype == "Devices" and contains(deviceMounts, name))) and C_Item.IsBound(ItemLocation:CreateFromBagAndSlot(bag, slot)) then
-          if minLevel == 70 and not contains(lvl70GroundMounts, name) then
-              table.insert(newFlyingMounts, name)
-          else
-              table.insert(newGroundMounts, name)
-          end
-        elseif subtype == "Pet" or contains(specialCompanions, name) then
-          table.insert(newCompanions, name)
-        end
-      end
+  local numMounts = GetNumCompanions("MOUNT")
+  for slot = 1, numMounts do
+    local _, creatureName, _, _, isSummoned = GetCompanionInfo("MOUNT", slot)
+    if tContains(favFlyings, creatureName) then
+      table.insert(newFlyingMounts, slot)
+    elseif tContains(favGrounds, creatureName) then
+      table.insert(newGroundMounts, slot)
+    elseif tContains(favWaters, creatureName) then
+        table.insert(newWaterMounts, slot)
+    end
+  end
+
+  local numCritters = GetNumCompanions("CRITTER")
+  for slot = 1, numCritters do
+    local _, creatureName, _, _, isSummoned = GetCompanionInfo("CRITTER", slot)
+    if tContains(favCritters, creatureName) then
+      table.insert(newCritters, slot)
     end
   end
 
   groundMounts = newGroundMounts
   flyingMounts = newFlyingMounts
-  companions = newCompanions
-
-  rmcSetRandom(true)
+  waterMounts = newWaterMounts
+  critters = newCritters
 end
 
 local function forceGroundMount()
@@ -87,42 +97,33 @@ function rmcSetRandom(force)
   end
 
   local numMounts = #mounts
-  local numCompanions = #companions
-
-  if numMounts > 0 then
-    randomMount = mounts[math.random(numMounts)]
-    setButton(rmcMountButton, "item", randomMount)
-  elseif IsFlyableArea() and not forceGroundMount() then
-    -- flight form?
-  elseif IsSpellKnown(23161) then -- dreadsteed
-    setButton(rmcMountButton, "spell", "Summon Dreadsteed")
-  elseif IsSpellKnown(5784) then -- felsteed
-    setButton(rmcMountButton, "spell", "Summon Felsteed")
-  elseif IsSpellKnown(34767) or IsSpellKnown(23214) then -- charger
-    setButton(rmcMountButton, "spell", "Summon Charger")
-  elseif IsSpellKnown(34769) or IsSpellKnown(13819) then -- warhorse
-    setButton(rmcMountButton, "spell", "Summon Warhorse")
-  end
+  local numCritters = #critters
 
   if skipPet() then
-    rmcCompanionButton:SetAttribute("item", "")
     return
   end
-  if numCompanions > 0 then
-    lastRandomCompanion = randomCompanion
-    randomIndex = math.random(numCompanions)
-    randomCompanion = companions[math.random(numCompanions)]
+
+  if numCritters > 0 then
+    lastRandomCritter = randomCritter
+    randomIndex = math.random(numCritters)
+    randomCritter = critters[math.random(numCritters)]
     -- try not to summon the same campanion
-    if numCompanions > 1 and lastRandomCompanion == randomCompanion then
-      if randomIndex == numCompanions then
-        randomCompanion = companions[randomIndex - 1]
+    if numCritters > 1 and lastRandomCritter == randomCritter then
+      if randomIndex == numCritters then
+        randomCritter = critters[randomIndex - 1]
       else
-        randomCompanion = companions[randomIndex + 1]
+        randomCritter = critters[randomIndex + 1]
       end
     end
-    rmcCompanionButton:SetAttribute("item", randomCompanion)
+    DismissCompanion("CRITTER")
+    CallCompanion("CRITTER", randomCritter)
+  end
+
+  if numMounts > 0 then
+    CallCompanion("MOUNT", mounts[math.random(numMounts)])
   end
 end
 
-rmcFrame:RegisterEvent("BAG_UPDATE_DELAYED")
+rmcFrame:RegisterEvent("COMPANION_LEARNED")
+rmcFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 rmcFrame:SetScript("OnEvent", rmcRefreshData)
