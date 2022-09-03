@@ -77,7 +77,10 @@ local function forceGroundMount()
 end
 
 local function skipPet()
-  return GetSubZoneText() == "Throne of Kil'jaeden" and C_QuestLog.IsOnQuest(11516) and not IsQuestComplete(11516)
+  -- don't spawn pet for isle daily or venomhide hatchling quests
+  return (GetSubZoneText() == "Throne of Kil'jaeden" and C_QuestLog.IsOnQuest(11516) and not IsQuestComplete(11516)) or
+    C_QuestLog.IsOnQuest(13904) or C_QuestLog.IsOnQuest(13916) or C_QuestLog.IsOnQuest(13905) or C_QuestLog.IsOnQuest(13915) or
+    C_QuestLog.IsOnQuest(13903) or C_QuestLog.IsOnQuest(13889) or C_QuestLog.IsOnQuest(13914) or C_QuestLog.IsOnQuest(13917)
 end
 
 local function setButton(button, type, value)
@@ -99,24 +102,22 @@ function rmcSetRandom(force)
   local numMounts = #mounts
   local numCritters = #critters
 
-  if skipPet() then
-    return
-  end
-
-  if numCritters > 0 then
-    lastRandomCritter = randomCritter
-    randomIndex = math.random(numCritters)
-    randomCritter = critters[math.random(numCritters)]
-    -- try not to summon the same campanion
-    if numCritters > 1 and lastRandomCritter == randomCritter then
-      if randomIndex == numCritters then
-        randomCritter = critters[randomIndex - 1]
-      else
-        randomCritter = critters[randomIndex + 1]
+  if not skipPet() then
+    if numCritters > 0 then
+      lastRandomCritter = randomCritter
+      randomIndex = math.random(numCritters)
+      randomCritter = critters[math.random(numCritters)]
+      -- try not to summon the same campanion
+      if numCritters > 1 and lastRandomCritter == randomCritter then
+        if randomIndex == numCritters then
+          randomCritter = critters[randomIndex - 1]
+        else
+          randomCritter = critters[randomIndex + 1]
+        end
       end
+      DismissCompanion("CRITTER")
+      CallCompanion("CRITTER", randomCritter)
     end
-    DismissCompanion("CRITTER")
-    CallCompanion("CRITTER", randomCritter)
   end
 
   if numMounts > 0 then
