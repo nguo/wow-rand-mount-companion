@@ -11,6 +11,11 @@ local playerName = UnitName("player")
 local playerConfig = RMCConfig.db[playerName]
 local defaultConfig = RMCConfig.db["default"]
 
+local dalaranMapId = 125
+local dalaranXCutoff = .6524132
+local coldWeatherFlyingSpellId = 54197
+local northrendInstanceId = 571
+
 local favGrounds
 local favFlyings
 local favWaters
@@ -72,10 +77,6 @@ local function rmcRefreshData()
   critters = newCritters
 end
 
-local function forceGroundMount()
-  return GetSubZoneText() == "Throne of Kil'jaeden" and C_QuestLog.IsOnQuest(11516) and not IsQuestComplete(11516)
-end
-
 local function skipPet()
   -- don't spawn pet for isle daily or venomhide hatchling quests
   return (GetSubZoneText() == "Throne of Kil'jaeden" and C_QuestLog.IsOnQuest(11516) and not IsQuestComplete(11516)) or
@@ -88,12 +89,35 @@ local function setButton(button, type, value)
   button:SetAttribute(type, value)
 end
 
+local function canFly()
+  if GetSubZoneText() == "Throne of Kil'jaeden" and C_QuestLog.IsOnQuest(11516) and not IsQuestComplete(11516) then
+    return false
+  elseif #flyingMounts == 0 or not IsFlyableArea() then
+    return false
+  end
+
+  -- if northrend and doesn't know cold weather flying, return false
+  local instanceId = select(8, GetInstanceInfo())
+  if instanceId == northrendInstanceId and not IsSpellKnown(coldWeatherFlyingSpellId) then
+    return false
+  end
+
+  -- if in dalaran, can only fly in krasus' landing, but only in the outside area
+  local mapId = C_Map.GetBestMapForUnit("player")
+  local position = C_Map.GetPlayerMapPosition(mapId, "player")
+  if mapId == dalaranMapId and position ~= nil and position.x < dalaranXCutoff then
+    return false
+  end
+
+  return true
+end
+
 function rmcSetRandom(force)
   if IsMounted() and not force then
     return
   end
 
-  if IsFlyableArea() and not forceGroundMount() and #flyingMounts > 0 then
+  if canFly() then
     mounts = flyingMounts
   else
     mounts = groundMounts
