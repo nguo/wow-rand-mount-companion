@@ -11,7 +11,6 @@ local playerName = UnitName("player")
 local playerConfig = RMCConfig.db[playerName]
 local defaultConfig = RMCConfig.db["default"]
 
-local dalaranMapId = 125
 local dalaranXCutoff = .6524132
 local coldWeatherFlyingSpellId = 54197
 local northrendInstanceId = 571
@@ -103,12 +102,14 @@ local function canFly()
   end
 
   -- if in dalaran, can only fly in krasus' landing, but only in the outside area
-  local mapId = C_Map.GetBestMapForUnit("player")
-  local position = C_Map.GetPlayerMapPosition(mapId, "player")
-  if mapId == dalaranMapId and GetSubZoneText() ~= "Krasus' Landing" then
-    return false
-  end
-  if GetSubZoneText() == "Krasus' Landing" and position ~= nil and position.x < dalaranXCutoff then
+  local inDalaran = (GetZoneText() == "Dalaran")
+  if inDalaran then
+    local mapId = C_Map.GetBestMapForUnit("player")
+    local position = C_Map.GetPlayerMapPosition(mapId, "player")
+    local inKarsus = (GetSubZoneText() == "Krasus' Landing")
+    if inKarsus and position ~= nil and position.x >= dalaranXCutoff then
+      return true
+    end
     return false
   end
 
