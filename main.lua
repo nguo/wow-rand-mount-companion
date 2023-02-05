@@ -121,6 +121,8 @@ function rmcSetRandom(force)
     return
   end
 
+  rmcRefreshData()
+
   if canFly() then
     mounts = flyingMounts
   else
@@ -153,6 +155,6 @@ function rmcSetRandom(force)
   end
 end
 
-rmcFrame:RegisterEvent("COMPANION_LEARNED")
-rmcFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
-rmcFrame:SetScript("OnEvent", rmcRefreshData)
+-- rmcFrame:RegisterEvent("COMPANION_LEARNED")
+-- rmcFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
+-- rmcFrame:SetScript("OnEvent", rmcRefreshData)
