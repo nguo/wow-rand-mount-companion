@@ -104,11 +104,14 @@ local function canFly()
   -- if in dalaran, can only fly in krasus' landing, but only in the outside area
   local inDalaran = (GetZoneText() == "Dalaran")
   if inDalaran then
+    -- sometimes it says i'm in dalaran when i'm in wintergrasp. in those cases this returns nil
     local mapId = C_Map.GetBestMapForUnit("player")
-    local position = C_Map.GetPlayerMapPosition(mapId, "player")
-    local inKarsus = (GetSubZoneText() == "Krasus' Landing")
-    if inKarsus and position ~= nil and position.x >= dalaranXCutoff then
-      return true
+    if mapId ~= nil then
+      local position = C_Map.GetPlayerMapPosition(mapId, "player")
+      local inKrasus = (GetSubZoneText() == "Krasus' Landing")
+      if inKrasus and position ~= nil and position.x >= dalaranXCutoff then
+        return true
+      end
     end
     return false
   end
