@@ -2,6 +2,7 @@ local rmcFrame = CreateFrame("Frame", "rmcFrame", UIParent)
 
 local groundMounts = {}
 local flyingMounts = {}
+local aq40Mounts = {}
 local waterMounts = {}
 local critters = {}
 
@@ -14,9 +15,11 @@ local defaultConfig = RMCConfig.db["default"]
 local dalaranXCutoff = .6524132
 local coldWeatherFlyingSpellId = 54197
 local northrendInstanceId = 571
+local aq40InstanceId = 531
 
 local favGrounds
 local favFlyings
+local favAq40
 local favWaters
 local favCritters
 
@@ -30,6 +33,12 @@ if playerConfig and playerConfig.flying and #playerConfig.flying > 0 then
   favFlyings = playerConfig.flying
 else
   favFlyings = defaultConfig.flying
+end
+
+if playerConfig and playerConfig.aq40 and #playerConfig.aq40 > 0 then
+  favAq40 = playerConfig.aq40
+else
+  favAq40 = {}
 end
 
 if playerConfig and playerConfig.water and #playerConfig.water > 0 then
@@ -49,6 +58,7 @@ local function rmcRefreshData()
   local newFlyingMounts = {}
   local newWaterMounts = {}
   local newCritters = {}
+  local newAq40 = {}
 
   local numMounts = GetNumCompanions("MOUNT")
   for slot = 1, numMounts do
@@ -58,7 +68,9 @@ local function rmcRefreshData()
     elseif tContains(favGrounds, creatureName) then
       table.insert(newGroundMounts, slot)
     elseif tContains(favWaters, creatureName) then
-        table.insert(newWaterMounts, slot)
+      table.insert(newWaterMounts, slot)
+    elseif tContains(favAq40, creatureName) then
+      table.insert(newAq40, slot)
     end
   end
 
@@ -72,6 +84,7 @@ local function rmcRefreshData()
 
   groundMounts = newGroundMounts
   flyingMounts = newFlyingMounts
+  aq40Mounts = newAq40
   waterMounts = newWaterMounts
   critters = newCritters
 end
@@ -88,6 +101,11 @@ local function setButton(button, type, value)
   button:SetAttribute(type, value)
 end
 
+local function getInstanceId()
+  return select(8, GetInstanceInfo())
+end
+
+
 local function canFly()
   if GetSubZoneText() == "Throne of Kil'jaeden" and C_QuestLog.IsOnQuest(11516) and not IsQuestComplete(11516) then
     return false
@@ -96,7 +114,7 @@ local function canFly()
   end
 
   -- if northrend and doesn't know cold weather flying, return false
-  local instanceId = select(8, GetInstanceInfo())
+  local instanceId = getInstanceId()
   if instanceId == northrendInstanceId and not IsSpellKnown(coldWeatherFlyingSpellId) then
     return false
   end
@@ -124,9 +142,12 @@ function rmcSetRandom(force)
     return
   end
 
+  local instanceId = getInstanceId()
   rmcRefreshData()
 
-  if canFly() then
+  if instanceId == aq40InstanceId and #aq40Mounts > 0 then
+    mounts = aq40Mounts
+  elseif canFly() then
     mounts = flyingMounts
   else
     mounts = groundMounts
