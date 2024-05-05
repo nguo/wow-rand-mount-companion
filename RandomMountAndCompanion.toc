@@ -1,8 +1,7 @@
 ## Interface: 20503
 ## Title: RandomMountAndCompanion
 ## Author: xgooy
-## Version: 1.0.0-wotlkc
-## Notes: Summons random mount and companion - Wotlk Version
+## Version: 1.0.0-cata
+## Notes: Summons random mount and companion - Cata Version
 
-config.lua
 main.lua
